@@ -1,9 +1,9 @@
-import mitt from "mitt";
-import equal from "deep-equal";
-import { query as q } from "faunadb";
-import dynamicAsyncInterval from "./DynamicAsyncInterval";
-import LivePageHelper from "./LivePageHelper";
-import { v4 as uuidv4 } from "uuid";
+const mitt = require("mitt");
+const equal = require("deep-equal");
+const { query: q } = require("faunadb");
+const dynamicAsyncInterval = require("./DynamicAsyncInterval");
+const LivePageHelper = require("./LivePageHelper");
+const { v4: uuidv4 } = require("uuid");
 
 const withRealTimeMethods = (client) => {
   client.lastActivityAt = new Date();
@@ -163,4 +163,4 @@ const withRealTimeMethods = (client) => {
   return client;
 };
 
-export { withRealTimeMethods };
+module.exports = { withRealTimeMethods };

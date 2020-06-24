@@ -30,4 +30,4 @@ class LivePageHelper {
   }
 }
 
-export default LivePageHelper;
+module.exports = LivePageHelper;
