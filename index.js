@@ -1,4 +1,4 @@
-const mitt = require("mitt");
+const mitt = require("mitt").default; // weird type/export errors occuring from this package
 const equal = require("deep-equal");
 const { query: q } = require("faunadb");
 const dynamicAsyncInterval = require("./DynamicAsyncInterval");
