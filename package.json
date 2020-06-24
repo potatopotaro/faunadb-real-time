@@ -1,6 +1,6 @@
 {
   "name": "faunadb-real-time",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Convenience wrapper for \"smartly\" polling FaunaDB.",
   "main": "index.js",
   "repository": "https://github.com/potatopotaro/faunadb-real-time.git",
