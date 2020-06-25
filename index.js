@@ -1,4 +1,4 @@
-const mitt = require("mitt");
+const EventEmitter = require("events");
 const equal = require("deep-equal");
 const { query: q } = require("faunadb");
 const dynamicAsyncInterval = require("./DynamicAsyncInterval");
@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 
 const withRealTimeMethods = (client) => {
   client.lastActivityAt = new Date();
-  client.emitter = mitt();
+  client.emitter = new EventEmitter();
 
   client.markClientActivity = function () {
     this.lastActivityAt = new Date();
@@ -23,8 +23,7 @@ const withRealTimeMethods = (client) => {
       ...options
     } = {}
   ) {
-    const eventId = "liveQuery-" + uuidv4();
-    let numSubscriptions = 0;
+    const eventId = uuidv4();
     let useActiveMs = true;
     let isDynamic = activeMs !== passiveMs;
     let poll;
@@ -34,7 +33,7 @@ const withRealTimeMethods = (client) => {
       const shouldUseActiveMs = now - this.lastActivityAt < passiveAfter;
       if (shouldUseActiveMs !== useActiveMs) {
         useActiveMs = shouldUseActiveMs;
-        if (numSubscriptions > 0 && poll !== undefined) {
+        if (this.emitter.listenerCount(eventId) > 0 && poll !== undefined) {
           poll.reschedule(useActiveMs ? activeMs : passiveMs);
         }
       }
@@ -44,7 +43,7 @@ const withRealTimeMethods = (client) => {
       subscribe: (callback) => {
         this.emitter.on(eventId, callback);
 
-        if (numSubscriptions === 0) {
+        if (this.emitter.listenerCount(eventId) === 1) {
           (async () => {
             let prevResult;
             poll = dynamicAsyncInterval(async () => {
@@ -64,12 +63,9 @@ const withRealTimeMethods = (client) => {
           })();
         }
 
-        numSubscriptions += 1;
-
         return () => {
           this.emitter.off(eventId, callback);
-          numSubscriptions -= 1;
-          if (numSubscriptions === 0) {
+          if (this.emitter.listenerCount(eventId) === 0) {
             poll.destroy();
             this.emitter.off("newClientActivity", scheduler);
           }
@@ -91,7 +87,6 @@ const withRealTimeMethods = (client) => {
     } = {}
   ) {
     const eventId = uuidv4();
-    let numSubscriptions = 0;
     let useActiveMs = true;
     let isDynamic = activeMs !== passiveMs;
     let poll;
@@ -104,7 +99,7 @@ const withRealTimeMethods = (client) => {
       const shouldUseActiveMs = now - this.lastActivityAt < passiveAfter;
       if (shouldUseActiveMs !== useActiveMs) {
         useActiveMs = shouldUseActiveMs;
-        if (numSubscriptions > 0 && poll !== undefined) {
+        if (this.emitter.listenerCount(eventId) > 0 && poll !== undefined) {
           poll.reschedule(useActiveMs ? activeMs : passiveMs);
         }
       }
@@ -113,7 +108,7 @@ const withRealTimeMethods = (client) => {
     livePaginateHelper.subscribe = (callback) => {
       this.emitter.on(eventId, callback);
 
-      if (numSubscriptions === 0) {
+      if (this.emitter.listenerCount(eventId) === 1) {
         (async () => {
           let watermark = await this.query(q.ToMicros(q.Now()));
           poll = dynamicAsyncInterval(async () => {
@@ -145,12 +140,9 @@ const withRealTimeMethods = (client) => {
         })();
       }
 
-      numSubscriptions += 1;
-
       return () => {
         this.emitter.off(eventId, callback);
-        numSubscriptions -= 1;
-        if (numSubscriptions === 0) {
+        if (this.emitter.listenerCount(eventId) === 0) {
           poll.destroy();
           this.emitter.off("newClientActivity", scheduler);
         }

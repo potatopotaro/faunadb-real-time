@@ -1,6 +1,6 @@
 {
   "name": "faunadb-real-time",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Convenience wrapper for \"smartly\" polling FaunaDB.",
   "main": "index.js",
   "repository": "https://github.com/potatopotaro/faunadb-real-time.git",
@@ -9,7 +9,6 @@
   "dependencies": {
     "deep-equal": "^2.0.3",
     "interval-promise": "^1.4.0",
-    "mitt": "^1.2.0",
     "uuid": "^8.1.0"
   },
   "peerDependencies": {
